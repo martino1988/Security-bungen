@@ -1,0 +1,57 @@
+# Notwndige Software installieren
+
+## Image erstellen
+sudo apt install dc3dd
+## File Carviung - Dateien wiederherstellen
+sudo apt install foremost
+## Metadaten auslesen
+sudo apt install mat
+
+# Automatisches Einbinden von USB Sticks deaktivieren:
+sudo systemctl stop udisks2.service
+
+# USB Stick anstecken
+
+# USB Stick "suchen" mit
+lsblk
+sudo fdisk -l
+#  vermutlich unter /dev/sdb zu finden
+
+# Eine 1:1 Kopie bzw. Image vom Stick erstellen mit dc3dd
+## if = Laufwerk welches gesichert werden soll
+## hof = Zieldatei des Images
+## hash = Hash-Algorythmus (md5, sha1 ,sha256, sha512)
+## hlog = Logdatei der Hashes
+sudo dc3dd if=/dev/sdb hof=image.dd hash=sha512 hlog=image.hash
+
+# Kopie des Images erstellen - als Backup
+cp image.dd image2.dd
+
+# Das generierte Image als Loop-Device "Laufwerk" einbinden mit 
+sudo losetup -f -P image2.dd
+
+# Name des Looplaufwerk suchen (vmtl loop0)
+lsblk
+sudo fdisk -l
+
+# Mountpoint für das Loop-Laufwerk erstellen
+mkdir /mnt/image/
+
+# Laufwerk als Read-only ro einbinden
+sudo mount -o ro /dev/loop0 /mnt/image/
+
+# Jetzt kann man das Verzeichnis einsehen im Dokumentenbrowser
+
+# Gelöschte Dateien wiederherstellen mit foremost
+
+# Zielordner für die Dateien erstellen
+mkdir file-carve
+
+# Image durchsuchen und Dateien in den Zielordner kopieren
+foremost -i image2.dd -o file-carve/ -t all -v
+
+# Metadaten von Dateien auslesen
+stat <<filename>>
+mat2 -s <<filename>>
+exiftool <<filename>> 
+
